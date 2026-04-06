@@ -1,35 +1,32 @@
-#pip install opencv-python
-
 import cv2
 import numpy as np
+import imageio
 
-
-#function that returns an matriz of all_pixels[frame][pixel][BGA]
 def extract_pixels(video_path):
-    video = cv2.VideoCapture(video_path)
-
     all_pixels = []
     
-    #width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
-    #height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    if video_path.endswith('.gif'):
+        # Read GIF bằng imageio
+        reader = imageio.get_reader(video_path)
+        for frame in reader:
+            # Switch from RGB to BGRA to match your underlying logic
+            frame_bgra = cv2.cvtColor(frame, cv2.COLOR_RGB2BGRA)
+            all_pixels.append(frame_bgra)
+        reader.close()
+    else:
+        # Keep OpenCV for other video formats
+        video = cv2.VideoCapture(video_path)
+        while True:
+            ret, frame = video.read()
+            if not ret: break
+            argb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
+            all_pixels.append(argb_frame)
+        video.release()
 
-    while True:
-        ret, frame = video.read()
-
-        if not ret:
-            break
-
-        argb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
-        all_pixels.append(argb_frame)
-
-    video.release()
-
-    all_pixels = np.array(all_pixels)
-
-    return all_pixels
+    return np.array(all_pixels)
 
 
-#video pafh and function name
+#video path and function name
 video_path = './examples/nezuko.gif'
 func_name = 'nezuko'
 
